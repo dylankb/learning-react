@@ -1,11 +1,14 @@
 class ProductList extends React.Component {
   constructor(props) {
-    super(props)
+    super(props);
+
     this.state = {
-      products: []
-    }
+      products: [],
+    };
+
     this.handleProductUpVote = this.handleProductUpVote.bind(this);
   }
+
   componentDidMount() {
     this.setState({ products: Seed.products });
   }
@@ -50,17 +53,19 @@ class ProductList extends React.Component {
       </div>
     );
   }
- }
+}
 
 class Product extends React.Component {
   constructor(props) {
-    super(props)
+    super(props);
+
     this.handleUpVote = this.handleUpVote.bind(this);
   }
 
   handleUpVote() {
     this.props.onVote(this.props.id);
   }
+
   render() {
     return (
       <div className='item'>
