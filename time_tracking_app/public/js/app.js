@@ -17,6 +17,10 @@ class TimersDashboard extends React.Component {
     ],
   };
 
+  handleEditFormSubmit = (attrs) => {
+    this.updateTimer(attrs);
+  }
+
   handleCreateFormSubmit = (timer) => {
     this.createTimer(timer);
   };
@@ -28,12 +32,28 @@ class TimersDashboard extends React.Component {
     });
   };
 
+  updateTimer = (attrs) => {
+    this.setState({
+      timers: this.state.timers.map((timer) => {
+        if (timer.id === attrs.id) {
+          return Object.assign({}, timer, {
+            title: attrs.title,
+            project: attrs.project,
+          });
+        } else {
+          return timer;
+        }
+      }),
+    });
+  };
+
   render() {
     return (
       <div className='ui three column centered grid'>
         <div className='column'>
           <EditableTimerList
             timers={this.state.timers}
+            onFormSubmit={this.handleEditFormSubmit}
           />
           <ToggleableTimerForm
             onFormSubmit={this.handleCreateFormSubmit}
@@ -95,6 +115,7 @@ class EditableTimerList extends React.Component {
         project={timer.project}
         elapsed={timer.elapsed}
         runningSince={timer.runningSince}
+        onFormSubmit={this.props.onFormSubmit}
       />
     });
     return (
@@ -118,6 +139,11 @@ class EditableTimer extends React.Component {
     this.closeForm();
   };
 
+  handleSubmit = (timer) => {
+    this.props.onFormSubmit(timer);
+    this.closeForm();
+  }
+
   openForm = () => {
     this.setState({ editFormOpen: true })
   };
@@ -133,6 +159,7 @@ class EditableTimer extends React.Component {
           id={this.props.id}
           title={this.props.title}
           project={this.props.project}
+          onFormSubmit={this.handleSubmit}
           onFormClose={this.handleFormClose}
         />
       );
