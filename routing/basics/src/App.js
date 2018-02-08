@@ -37,6 +37,23 @@ Link.contextTypes = {
   history: PropTypes.object,
 };
 
+class Redirect extends React.Component {
+
+  static contextTypes = {
+    history: PropTypes.object,
+  }
+
+  componentDidMount() {
+    const history = this.context.history;
+    const to = this.props.to;
+    history.push(to);
+  }
+
+  render() {
+    return null;
+  }
+}
+
 class Router extends React.Component {
 
   static childContextTypes = {
@@ -81,12 +98,18 @@ const App = () => (
             <code>/pacific</code>
           </Link>
         </li>
+        <li>
+          <Link to='/black-sea'>
+            <code>/black-sea</code>
+          </Link>
+        </li>
       </ul>
 
       <hr />
 
       <Route path='/atlantic' component={Atlantic} />
       <Route path='/pacific' component={Pacific} />
+      <Route path='/black-sea' component={BlackSea} />
     </div>
   </Router>
 );
@@ -110,5 +133,36 @@ const Pacific = () => (
     </p>
   </div>
 );
+
+class BlackSea extends React.Component {
+  state = {
+    counter: 3,
+  };
+
+  componentDidMount() {
+    this.interval = setInterval(() => (
+      this.setState(prevState => {
+        return {
+          counter: prevState.counter - 1,
+        };
+      }
+    )), 1000);
+  }
+
+  render() {
+    return (
+      <div>
+        <h3>Black Sea</h3>
+        <p>Nothing to sea [sic] here ...</p>
+        <p>Redirecting in {this.state.counter}...</p>
+        {
+          (this.state.counter < 1) ? (
+            <Redirect to='/' />
+          ) : null
+        }
+      </div>
+    );
+  }
+}
 
 export default App;
