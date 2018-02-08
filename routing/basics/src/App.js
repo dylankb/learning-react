@@ -1,11 +1,12 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 
 import createHistory from 'history/createBrowserHistory';
 
 const history = createHistory();
 
-const Route = ({ path, component }) => {
-  const pathname = window.location.pathname
+const Route = ({ path, component }, { location }) => {
+  const pathname = location.pathname;
   if (pathname.match(path)) {
     return (
       React.createElement(component)
@@ -13,43 +14,82 @@ const Route = ({ path, component }) => {
   } else {
     return null;
   }
-}
+};
 
-class App extends React.Component {
-  componentDidMount() {
-    history.listen(() => this.forceUpdate());
+Route.contextTypes = {
+  location: PropTypes.object,
+};
+
+
+const Link = ({ to, children }, { history }) => (
+  <a
+    onClick={(e) => {
+      e.preventDefault();
+      history.push(to);
+    }}
+    href={to}
+  >
+    {children}
+  </a>
+);
+
+Link.contextTypes = {
+  history: PropTypes.object,
+};
+
+class Router extends React.Component {
+
+  static childContextTypes = {
+    history: PropTypes.object,
+    location: PropTypes.object,
+  };
+
+  constructor(props) {
+    super(props);
+
+    this.history = createHistory();
+    this.history.listen(() => this.forceUpdate());
   }
-  
+
+  getChildContext() {
+    return {
+      history: this.history,
+      location: window.location,
+    };
+  }
+
   render() {
-    return (
-      <div
-        className='ui text container'
-      >
-        <h2 className='ui dividing header'>
-          Which body of water?
-        </h2>
-
-        <ul>
-          <li>
-            <Link to='/atlantic'>
-              <code>/atlantic</code>
-            </Link>
-          </li>
-          <li>
-            <Link to='/pacific'>
-              <code>/pacific</code>
-            </Link>
-          </li>
-        </ul>
-
-        <hr />
-
-        <Route path='/atlantic' component={Atlantic} />
-        <Route path='/pacific' component={Pacific} />
-      </div>
-    );
+    return this.props.children;
   }
 }
+
+const App = () => (
+  <Router>
+    <div className='ui text container'>
+      <h2 className='ui dividing header'>
+        Which body of water?
+      </h2>
+
+      <ul>
+        <li>
+          <Link to='/atlantic'>
+            <code>/atlantic</code>
+          </Link>
+        </li>
+        <li>
+          <Link to='/pacific'>
+            <code>/pacific</code>
+          </Link>
+        </li>
+      </ul>
+
+      <hr />
+
+      <Route path='/atlantic' component={Atlantic} />
+      <Route path='/pacific' component={Pacific} />
+    </div>
+  </Router>
+);
 
 const Atlantic = () => (
   <div>
@@ -69,18 +109,6 @@ const Pacific = () => (
       'mar pacifico' in 1521, which means peaceful sea.
     </p>
   </div>
-);
-
-const Link = ({ to, children }) => (
-  <a
-    onClick={(e) => {
-      e.preventDefault();
-      history.push(to);
-    }}
-    href={to}
-  >
-    {children}
-  </a>
 );
 
 export default App;
