@@ -42,27 +42,89 @@ function reducer(state, action) {
 const initialState = { messages: [] };
 const store = createStore(reducer, initialState);
 
-const listener = () => {
-  console.log('Current state: ');
-  console.log(store.getState());
+class App extends React.Component {
+  componentDidMount() {
+    store.subscribe(() => this.forceUpdate());
+  }
+
+  render() {
+    const messages = store.getState().messages;
+    return (
+      <div className='ui segment'>
+        <MessageView messages={messages} />
+        <MessageInput />
+      </div>
+    );
+  }
 }
 
-store.subscribe(listener);
+class MessageInput extends React.Component {
+  state = {
+    value: '',
+  };
 
-const addMessageAction1 = {
-  type: 'ADD_MESSAGE',
-  message: 'How do you read?',
-};
-store.dispatch(addMessageAction1); // listener() is called
+  onChange = (e) => {
+    this.setState({
+      value: e.target.value,
+    });
+  }
 
-const addMessageAction2 = {
-  type: 'ADD_MESSAGE',
-  message: 'I read you loud and clear, Houston.',
-};
-store.dispatch(addMessageAction2); // listener() is called
+  handleSubmit = () => {
+    store.dispatch({
+      type: 'ADD_MESSAGE',
+      message: this.state.value,
+    });
 
-const deleteMessageAction = {
-  type: 'DELETE_MESSAGE',
-  index: 0,
+    this.setState({
+      value: '',
+    });
+  };
+
+  render() {
+    return (
+      <div className='ui input'>
+        <input
+          onChange={this.onChange}
+          value={this.state.value}
+          type='text'
+        />
+        <button
+          onClick={this.handleSubmit}
+          className='ui primary button'
+          type='submit'
+        >
+          Submit
+        </button>
+      </div>
+    );
+  }
 };
-store.dispatch(deleteMessageAction); // ...
+
+class MessageView extends React.Component {
+  handleClick = (index) => {
+    store.dispatch({
+      type: 'DELETE_MESSAGE',
+      index: index,
+    });
+  };
+
+  render() {
+    const messages = this.props.messages.map((message, index) => (
+      <div
+        className='comment'
+        key={index}
+        onClick={() => this.handleClick(index)}
+      >
+        {message}
+      </div>
+    );
+
+    return (
+      <div className='ui comments'>
+        {messages}
+      </div>
+    );
+  );
+}
+
+export default App;
