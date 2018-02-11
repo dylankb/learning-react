@@ -28,8 +28,29 @@ function reducer(state, action) {
       ],
     };
   } else if (action.type === 'DELETE_MESSAGE') {
+    const threadIndex = state.threads.findIndex(
+      (thread) => thread.messages.find((message) => (
+        message.id === action.id
+      ))
+    );
+    const oldThread = state.threads[threadIndex];
+
+    const newThread = {
+      ...oldThread,
+      messages: oldThread.messages.filter((message) => (
+        message.id !== action.id
+      )),
+    };
+
     return {
-      messages: state.messages.filter((message) => (message.id !== action.id)),
+      ...state,
+      threads: [
+        ...state.threads.slice(0, threadIndex),
+        newThread,
+        ...state.threads.slice(
+          threadIndex + 1, state.threads.length
+        ),
+      ],
     };
   } else {
     return state;
@@ -58,7 +79,11 @@ const initialState = {
   ],
 };
 
-const store = createStore(reducer, initialState);
+const store = createStore(
+  reducer,
+  initialState,
+  window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
+);
 
 class App extends React.Component {
   componentDidMount() {
