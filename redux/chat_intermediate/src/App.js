@@ -29,63 +29,54 @@ function findThreadIndex(threads, action) {
         (thread) => thread.messages.find(message => (message.id === action.id))
       );
     }
+    default: {
+      return threads;
+    }
   }
 }
 
 function messagesReducer(state, action) {
-  if (action.type === 'ADD_MESSAGE') {
-    const newMessage = {
-      text: action.text,
-      timestamp: Date.now(),
-      id: uuid.v4(),
-    };
-    return state.concat(newMessage);
-  } else if (action.type === 'DELETE_MESSAGE') {
-    return state.filter(message => message.id !== action.id);
-  } else {
-    return state;
+  switch (action.type) {
+    case 'ADD_MESSAGE': {
+      const newMessage = {
+        text: action.text,
+        timestamp: Date.now(),
+        id: uuid.v4(),
+      };
+      return state.concat(newMessage);
+    }
+    case 'DELETE_MESSAGE': {
+      return state.filter(message => message.id !== action.id);
+    }
+    default: {
+      return state;
+    }
   }
 }
 
 function threadsReducer(state, action) {
-  if (action.type === 'ADD_MESSAGE') {
-    const threadIndex = state.findIndex(
-      (thread) => thread.id === action.threadId
-    );
-    const oldThread = state[threadIndex];
-    const newThread = {
-      ...oldThread, // copy all of the properties from oldThread to newThread:
-      messages: messagesReducer(oldThread.messages, action),
-    };
-    return [
-      ...state.slice(0, threadIndex), // up to the thread
-      newThread,                      // insert the new thread object
-      ...state.slice(
-        threadIndex + 1, state.length // after the thread
-      ),
-    ];
-  } else if (action.type === 'DELETE_MESSAGE') {
-    const threadIndex = state.findIndex(
-      (thread) => thread.messages.find((message) => (
-        message.id === action.id
-      ))
-    );
-    const oldThread = state[threadIndex];
+  switch (action.type) {
+    case 'ADD_MESSAGE':
+    case 'DELETE_MESSAGE': {
+      const threadIndex = findThreadIndex(state, action);
 
-    const newThread = {
-      ...oldThread,
-      messages: messagesReducer(oldThread.messages, action)
-    };
+      const oldThread = state[threadIndex];
+      const newThread = {
+        ...oldThread, // copy all of the properties from oldThread to newThread:
+        messages: messagesReducer(oldThread.messages, action),
+      };
 
-    return [
-      ...state.slice(0, threadIndex),
-      newThread,
-      ...state.slice(
-        threadIndex + 1, state.length
-      ),
-    ];
-  } else {
-    return state;
+      return [
+        ...state.slice(0, threadIndex), // up to the thread
+        newThread,                      // insert the new thread object
+        ...state.slice(
+          threadIndex + 1, state.length // after the thread
+        ),
+      ];
+    }
+    default: {
+      return state;
+    }
   }
 }
 
