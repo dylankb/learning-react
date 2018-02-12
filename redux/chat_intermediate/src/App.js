@@ -105,17 +105,9 @@ class App extends React.Component {
     const threads = state.threads;
     const activeThread = threads.find((t) => t.id === activeThreadId);
 
-    const tabs = threads.map(t => (
-      { // a "tab" object
-        title: t.title,
-        active: t.id === activeThreadId,
-        id: t.id,
-      }
-    ));
-
     return (
       <div className='ui segment'>
-        <ThreadTabs tabs={tabs} />
+        <ThreadTabs />
         <Thread thread={activeThread} />
       </div>
     );
@@ -129,7 +121,7 @@ const Tabs = (props) => (
         <div
           key={index}
           className={tab.active ? 'active item' : 'item'}
-          onClick={() => props.handleClick(tab.id)}
+          onClick={() => props.onClick(tab.id)}
         >
           {tab.title}
         </div>
@@ -139,10 +131,22 @@ const Tabs = (props) => (
 );
 
 class ThreadTabs extends React.Component {
+  componentDidMount() {
+    store.subscribe(() => this.forceUpdate());
+  }
   render() {
+    const state = store.getState();
+
+    const tabs = state.threads.map(thread => (
+      {
+        title: thread.title,
+        active: thread.id === state.activeThreadId,
+        id: thread.id,
+      }
+    ));
     return (
       <Tabs
-        tabs={this.props.tabs}
+        tabs={tabs}
         onClick={(id) => (
           store.dispatch({
             type: 'OPEN_THREAD',
