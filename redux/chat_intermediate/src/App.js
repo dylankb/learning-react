@@ -1,6 +1,8 @@
 import React from 'react';
-import { createStore, combineReducers } from 'redux';
 import uuid from 'uuid';
+
+import { createStore, combineReducers } from 'redux';
+import { Provider, connect } from 'react-redux';
 
 const reducer = combineReducers({
   activeThreadId: activeThreadIdReducer,
@@ -117,33 +119,35 @@ const Tabs = (props) => (
   </div>
 );
 
-class ThreadTabs extends React.Component {
-  componentDidMount() {
-    store.subscribe(() => this.forceUpdate());
-  }
-  render() {
-    const state = store.getState();
+const mapStateToTabsProps = (state) => {
+  const tabs = state.threads.map(thread => (
+    {
+      title: thread.title,
+      active: thread.id === state.activeThreadId,
+      id: thread.id,
+    }
+  ));
 
-    const tabs = state.threads.map(thread => (
-      {
-        title: thread.title,
-        active: thread.id === state.activeThreadId,
-        id: thread.id,
-      }
-    ));
-    return (
-      <Tabs
-        tabs={tabs}
-        onClick={(id) => (
-          store.dispatch({
-            type: 'OPEN_THREAD',
-            id: id,
-          })
-        )}
-      />
-    );
+  return {
+    tabs,
+  };
+};
+
+const mapDispatchToTabsProps = (dispatch) => (
+  {
+    onClick: (id) => (
+      dispatch({
+        type: 'OPEN_THREAD',
+        id: id,
+      })
+    ),
   }
-}
+);
+
+const ThreadTabs = connect(
+  mapStateToTabsProps,
+  mapDispatchToTabsProps
+)(Tabs);
 
 class TextFieldSubmit extends React.Component {
   state = {
@@ -235,7 +239,7 @@ class ThreadDisplay extends React.Component {
       />
     );
   }
-}
+);
 
 const Thread = (props) => (
   <div className='ui center aligned basic segment'>
@@ -247,6 +251,12 @@ const Thread = (props) => (
       onSubmit={props.onMessageSubmit}
     />
   </div>
-)
+);
 
-export default App;
+const WrappedApp = () => (
+  <Provider store={store}>
+    <App />
+  </Provider>
+);
+
+export default WrappedApp;
