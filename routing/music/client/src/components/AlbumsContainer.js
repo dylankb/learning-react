@@ -63,6 +63,7 @@ class AlbumsContainer extends Component {
                 return (
                   <Album
                     album={album}
+                    albumsPathname={matchPath}
                   />
                 );
               }}
